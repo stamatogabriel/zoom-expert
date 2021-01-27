@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  app:
+    build: ./public
+    ports: 
+      - "8080:8080"
+    volumes:
+      - .:/usr/app
+
+  server:
+    build: ./server
+    ports: 
+      - "3000:3000"
+    volumes:
+      - .:/usr/app
+
+
+
