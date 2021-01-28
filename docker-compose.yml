@@ -6,14 +6,21 @@ services:
     ports: 
       - "8080:8080"
     volumes:
-      - .:/usr/app
+      - .:/usr/public
 
   server:
     build: ./server
     ports: 
       - "3000:3000"
     volumes:
-      - .:/usr/app
+      - .:/usr/server
+
+  peer-server:
+    build: ./peer-server
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/usr/peer-server
 
 
 
