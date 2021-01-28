@@ -1,6 +1,6 @@
 FROM node:14.5.0
 
-WORKDIR /usr/public
+WORKDIR /usr/peer-server
 
 COPY package*.json ./
 COPY yarn.lock ./
