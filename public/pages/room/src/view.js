@@ -55,4 +55,9 @@ class View {
 
     participants.innerHTML = (count + myself)
   }
+
+  removeVideoElement(id) {
+    const element = document.getElementById(id)
+    element.remove()
+  }
 }
