@@ -12,13 +12,18 @@ class Business {
     this.currentPeer = {};
 
     this.peers = new Map();
+    this.usersRecording = new Map();
   }
+
   static initialize(deps) {
     const instance = new Business(deps);
     return instance._init();
   }
+
   async _init() {
     this.currentStream = await this.media.getCamera();
+
+    this.view.configureRecordButton(this.onRecordPress.bind(this));
 
     this.socket = this.socketBuilder
       .setOnUserConnected(this.onUserConnected())
@@ -27,7 +32,7 @@ class Business {
 
     this.currentPeer = await this.peerBuilder
       .setOnError(this.onPeerError())
-      .setOnCallConnectionOpenned(this.onPeerConnectionOpened())
+      .setOnConnectionOpened(this.onPeerConnectionOpened())
       .setOnCallReceived(this.onPeerCallReceived())
       .setOnPeerStreamReceived(this.onPeerStreamReceived())
       .setOnCallError(this.onPeerCallError())
@@ -38,6 +43,13 @@ class Business {
   }
 
   addVideoStream(userId, stream = this.currentStream) {
+    const recorderInstance = new Recorder(userId, stream);
+    this.usersRecording.set(recorderInstance.filename, recorderInstance);
+
+    if (this.recordingEnabled) {
+      recorderInstance.startRecording();
+    }
+
     const isCurrentId = false;
     this.view.renderVideo({
       userId,
@@ -58,13 +70,13 @@ class Business {
     return (userId) => {
       console.log("user disconnected!", userId);
 
-      if(this.peers.has(userId)) {
-        this.peers.get(userId).call.close()
-        this.peers.delete(userId)
+      if (this.peers.has(userId)) {
+        this.peers.get(userId).call.close();
+        this.peers.delete(userId);
       }
 
-      this.view.setParticipants(this.peers.size)
-      this.view.removeVideoElement(userId)
+      this.view.setParticipants(this.peers.size);
+      this.view.removeVideoElement(userId);
     };
   }
 
@@ -111,7 +123,39 @@ class Business {
   onPeerCallClose() {
     return (call) => {
       console.log("an call closed", call.peer);
-      call.answer(this.currentStream);
     };
+  }
+
+  onRecordPress(recordingEnabled) {
+    this.recordingEnabled = recordingEnabled;
+    console.log("botão pressionado", recordingEnabled);
+
+    for (const [key, value] of this.usersRecording) {
+      if (this.recordingEnabled) {
+        value.startRecording();
+        continue;
+      }
+
+      this.stopRecording(key)
+    }
+  }
+
+  // se um cliente precisa parar e sair da call
+  //precisamos parar as gravações anteriores
+  async stopRecording(userId) {
+    const usersRecordings = this.usersRecording
+
+    for(const [key, value] of usersRecordings) {
+      const isContextUser = key.includes(userId)
+
+      if (!isContextUser) continue
+
+      const rec = value
+      const isRecordingActive = rec.recordingActive
+
+      if(!isRecordingActive) continue;
+
+      await rec.stopRecording()
+    }
   }
 }
