@@ -15,12 +15,7 @@ services:
     volumes:
       - .:/usr/server
 
-  peer-server:
+  peer:
     build: ./peer-server
     ports:
       - "9000:9000"
-    volumes:
-      - .:/usr/peer-server
-
-
-
