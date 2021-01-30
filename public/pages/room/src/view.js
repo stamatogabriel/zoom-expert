@@ -1,6 +1,7 @@
 class View {
   constructor() {
     this.recorderBtn = document.getElementById("record");
+    this.leaveBtn = document.getElementById("leave");
   }
 
   createVideoElement({ muted = true, src, srcObject }) {
@@ -30,7 +31,7 @@ class View {
     muted = true,
   }) {
     const video = this.createVideoElement({
-      muted,
+      muted: isCurrentId,
       src: url,
       srcObject: stream,
     });
@@ -74,11 +75,25 @@ class View {
 
       command(this.recordingEnabled);
 
-      this.toggleRecordButtonColor(isActive)
+      this.toggleRecordButtonColor(isActive);
+    };
+  }
+
+  onLeaveClick(command) {
+    return async () => {
+      command();
+      
+      await Util.sleep(1000);
+
+      window.location = "/pages/home"
     };
   }
 
   configureRecordButton(command) {
     this.recorderBtn.addEventListener("click", this.onRecordClick(command));
+  }
+
+  configureLeaveButton(command) {
+    this.leaveBtn.addEventListener("click", this.onLeaveClick(command));
   }
 }
